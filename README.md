@@ -15,3 +15,9 @@ A futuristic e-commerce website built using HTML, CSS and JavaScript.
 - CSS3
 - JavaScript
 - Gemini API
+
+  # MeraKart
+
+🚀 Live Demo:
+https://merakart.netlify.app/
+
