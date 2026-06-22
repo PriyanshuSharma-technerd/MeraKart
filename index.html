@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeraKart — Vibe Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient background canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Cursor -->
+  <div id="custom-cursor"></div>
+  <div id="cursor-follower"></div>
+
+  <!-- Toast Notification -->
+  <div id="toast-container"></div>
+
+  <!-- HEADER -->
+  <header id="main-header">
+    <div class="logo" onclick="goHome()">
+      <span class="logo-icon">◈</span>
+      Mera<span class="logo-accent">Kart</span>
+    </div>
+    
+    <nav class="nav-links">
+      <a onclick="goHome()">Shop</a>
+      <a onclick="openOrders()">Orders</a>
+      <a onclick="openProfile()">Profile</a>
+    </nav>
+
+    <div class="header-right">
+      <div class="search-wrapper">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="Search the grid...">
+        <kbd>⌘K</kbd>
+      </div>
+
+      <div class="icon-btn" id="cart-btn" title="Cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="badge" id="cart-count">0</span>
+      </div>
+
+      <button id="login-btn" class="btn-outline" onclick="openAuthModal()">Login</button>
+      
+      <div id="user-profile" class="user-profile">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <span id="user-name">User</span>
+        <div class="user-dropdown">
+          <div class="dropdown-item" onclick="openProfile()">
+            <span>◎</span> My Profile
+          </div>
+          <div class="dropdown-item" onclick="openOrders()">
+            <span>≡</span> Orders
+          </div>
+          <div class="dropdown-item danger" onclick="logout()">
+            <span>⇠</span> Logout
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CART DRAWER -->
+  <div id="cart-overlay" onclick="closeCart()"></div>
+  <aside id="cart-drawer">
+    <div class="drawer-header">
+      <h3>Your Stash <span id="drawer-count">0</span></h3>
+      <button onclick="closeCart()" class="close-x">✕</button>
+    </div>
+    <div id="drawer-items"></div>
+    <div id="drawer-footer"></div>
+  </aside>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-backdrop" onclick="closeAuthModal()"></div>
+    <div class="modal-content">
+      <button class="close-x modal-close" onclick="closeAuthModal()">✕</button>
+      
+      <!-- LOGIN FORM -->
+      <form id="login-form">
+        <div class="modal-tag">ACCESS TERMINAL</div>
+        <h2 class="modal-title">Welcome Back</h2>
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="cyber@punk.com" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••" required>
+        </div>
+        <button type="submit" class="btn-primary w-full">LOGIN →</button>
+        <p class="auth-switch">New here? <span onclick="toggleAuthMode()">Create Account</span></p>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form id="signup-form" style="display:none;">
+        <div class="modal-tag">JOIN THE GRID</div>
+        <h2 class="modal-title">Create Account</h2>
+        <div class="form-group">
+          <label for="signup-name">Username</label>
+          <input type="text" id="signup-name" placeholder="NeonRider" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" placeholder="cyber@punk.com" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="••••••" required>
+        </div>
+        <button type="submit" class="btn-primary w-full">SIGN UP →</button>
+        <p class="auth-switch">Already in? <span onclick="toggleAuthMode()">Login</span></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- VIBEBOT CHAT -->
+  <button id="ai-chat-btn" onclick="toggleChat()" title="VibeBot">
+    <span class="chat-icon">✦</span>
+    <span class="chat-label">VibeBot</span>
+  </button>
+
+  <div id="ai-chat-window">
+    <div id="chat-header">
+      <div class="chat-header-left">
+        <div class="chat-status-dot"></div>
+        <span>✦ VibeBot</span>
+        <span class="chat-online">Online</span>
+      </div>
+      <button onclick="toggleChat()" class="close-x">✕</button>
+    </div>
+    <div id="chat-messages">
+      <div class="msg bot">Hey! I'm VibeBot ✦ Ask me to find products, compare prices, or just vibe. What do you need?</div>
+    </div>
+    <div id="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Ask me anything..." onkeypress="handleChatKey(event)">
+      <button id="chat-send" onclick="sendChat()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN SHOP VIEW -->
+  <div id="main-shop-view">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-tag">AI-POWERED SHOPPING</div>
+      <h1 class="hero-title">
+        <span class="hero-line">Find Your</span>
+        <span class="hero-line accent-text">Perfect Vibe</span>
+      </h1>
+      <p class="hero-sub">Curated products, AI-matched to your real taste</p>
+      
+      <div class="vibe-controls">
+        <button class="vibe-btn active" data-vibe="all" onclick="setVibe('all', '#00f2ff', this)">
+          <span>◈</span> All
+        </button>
+        <button class="vibe-btn" data-vibe="tech" onclick="setVibe('tech', '#00ff88', this)">
+          <span>⚡</span> Tech
+        </button>
+        <button class="vibe-btn" data-vibe="style" onclick="setVibe('style', '#ff00ff', this)">
+          <span>◆</span> Style
+        </button>
+        <button class="vibe-btn" data-vibe="home" onclick="setVibe('home', '#ffaa00', this)">
+          <span>⌂</span> Home
+        </button>
+        <button class="vibe-btn ai-btn" onclick="openVibeMatcher()">
+          <span>✦</span> AI Match
+        </button>
+      </div>
+    </section>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-item"><span id="stat-products">8</span><small>Products</small></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><span>4.8★</span><small>Avg Rating</small></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><span>24h</span><small>Delivery</small></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><span>AI</span><small>Powered</small></div>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <section class="products">
+      <div class="section-header">
+        <h2 class="section-title">Featured Products</h2>
+        <div class="sort-controls">
+          <select id="sort-select" onchange="sortProducts()">
+            <option value="default">Sort: Default</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="discount">Best Discount</option>
+          </select>
+        </div>
+      </div>
+      <div class="product-list" id="grid"></div>
+    </section>
+  </div>
+
+  <!-- PRODUCT DETAIL VIEW -->
+  <section id="product-detail-view">
+    <div class="breadcrumb">
+      <span onclick="goHome()" class="breadcrumb-link">Shop</span>
+      <span>›</span>
+      <span id="breadcrumb-name">Product</span>
+    </div>
+    
+    <div class="detail-container">
+      <div class="detail-image-area">
+        <div class="detail-image-frame">
+          <img id="detail-img" src="" alt="Product">
+          <div class="detail-discount-badge" id="detail-badge"></div>
+        </div>
+        <div class="detail-image-meta">
+          <span>🔒 Secure Checkout</span>
+          <span>↩ Easy Returns</span>
+          <span>⚡ Fast Delivery</span>
+        </div>
+      </div>
+
+      <div class="detail-info">
+        <div class="detail-category-tag" id="detail-category">TECH</div>
+        <h1 id="detail-title">Product Name</h1>
+        <div class="detail-rating">
+          <span class="stars">★★★★★</span>
+          <span class="rating-count" id="detail-rating-text">4.8 · 120 Reviews</span>
+        </div>
+        <div class="detail-price-block">
+          <span class="detail-price" id="detail-price">₹0</span>
+          <span class="detail-mrp" id="detail-old-price">₹0</span>
+          <span class="detail-save" id="detail-discount-tag"></span>
+        </div>
+        <p id="detail-desc" class="detail-desc">Description goes here...</p>
+        
+        <button id="ai-remix-btn" class="btn-ai-remix">
+          <span>✦</span> AI Hype Remix
+        </button>
+
+        <div class="detail-actions">
+          <button class="btn-outline-big" id="detail-add-btn">Add to Cart</button>
+          <button class="btn-primary-big" id="detail-buy-btn">Buy Now →</button>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust-item"><span>✓</span> Original Product</div>
+          <div class="trust-item"><span>✓</span> Secure Payment</div>
+          <div class="trust-item"><span>✓</span> 7-day Returns</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reviews-section">
+      <div class="reviews-header">
+        <h3>Customer Reviews</h3>
+        <button class="btn-sm-ai" onclick="summarizeReviews()">✦ AI Summary</button>
+      </div>
+      <div id="ai-review-summary" class="ai-summary-box"></div>
+      <div id="reviews-list"></div>
+    </div>
+  </section>
+
+  <!-- CHECKOUT VIEW -->
+  <section id="checkout-view">
+    <div class="checkout-header">
+      <button class="back-link" onclick="goHome()">← Continue Shopping</button>
+      <h2>Checkout</h2>
+    </div>
+    <div class="checkout-grid">
+      <div class="checkout-form-col">
+        <div class="form-section">
+          <h3 class="form-section-title">Shipping Details</h3>
+          <div class="form-group">
+            <label for="shipping-name">Full Name</label>
+            <input type="text" id="shipping-name" placeholder="John Doe" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="shipping-phone">Phone</label>
+              <input type="text" id="shipping-phone" placeholder="+91 98765 43210" required>
+            </div>
+            <div class="form-group">
+              <label for="shipping-pin">PIN Code</label>
+              <input type="text" id="shipping-pin" placeholder="400001" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="shipping-address">Address</label>
+            <input type="text" id="shipping-address" placeholder="123 Neon Street, Cyber City" required>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3 class="form-section-title">Payment</h3>
+          <div class="payment-methods">
+            <label class="payment-opt active"><input type="radio" name="pay" checked> <span>💳 Card</span></label>
+            <label class="payment-opt"><input type="radio" name="pay"> <span>📱 UPI</span></label>
+            <label class="payment-opt"><input type="radio" name="pay"> <span>🏦 NetBanking</span></label>
+          </div>
+          <div class="form-group">
+            <label for="pay-cardnumber">Card Number</label>
+            <input type="text" id="pay-cardnumber" placeholder="4321 8810 9920 1145">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pay-expiry">Expiry</label>
+              <input type="text" id="pay-expiry" placeholder="12/29">
+            </div>
+            <div class="form-group">
+              <label for="pay-cvv">CVV</label>
+              <input type="password" id="pay-cvv" placeholder="•••">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-summary-col">
+        <div class="order-summary-card">
+          <h3>Order Summary</h3>
+          <div id="checkout-items"></div>
+          <div class="summary-divider"></div>
+          <div class="summary-row"><span>Subtotal</span><span id="checkout-subtotal">₹0</span></div>
+          <div class="summary-row"><span>Tax (5%)</span><span id="checkout-tax">₹0</span></div>
+          <div class="summary-row"><span>Shipping</span><span class="free-tag">FREE</span></div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total-row"><span>Total</span><span id="checkout-total">₹0</span></div>
+          <button class="btn-primary w-full" id="place-order-btn" onclick="processPayment()">Pay Now →</button>
+          <div class="secure-note">🔒 256-bit SSL Encryption</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE VIEW -->
+  <section id="profile-view" class="page-section">
+    <button class="back-link" onclick="goHome()">← Back to Home</button>
+    <div class="profile-layout">
+      <div class="profile-card">
+        <div class="profile-avatar-large" id="profile-avatar-large">U</div>
+        <h2 id="profile-name-display" class="profile-name">User Name</h2>
+        <p id="profile-email-display" class="profile-email">user@example.com</p>
+        <div class="vibe-level-badge">⚡ Silver Vibe</div>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <span id="total-orders-count">0</span>
+            <small>Orders</small>
+          </div>
+          <div class="profile-stat">
+            <span id="total-savings-count">₹0</span>
+            <small>Saved</small>
+          </div>
+          <div class="profile-stat">
+            <span>4.9</span>
+            <small>Trust Score</small>
+          </div>
+        </div>
+        <button class="btn-outline w-full" style="margin-top:28px;" onclick="toast('Profile editing terminal open. Enter updates below!', 'info')">Edit Profile</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORDERS VIEW -->
+  <section id="orders-view" class="page-section">
+    <button class="back-link" onclick="goHome()">← Back to Home</button>
+    <h2 class="page-title">Order History</h2>
+    <div id="orders-list-container"></div>
+  </section>
+
+  <!-- VIBE MATCHER MODAL -->
+  <div id="vibe-modal" class="modal">
+    <div class="modal-backdrop" onclick="closeVibeMatcher()"></div>
+    <div class="modal-content vibe-modal-content">
+      <button class="close-x modal-close" onclick="closeVibeMatcher()">✕</button>
+      <div class="modal-tag">AI MATCHMAKER</div>
+      <h2 class="modal-title">Who are you shopping for?</h2>
+      <p class="modal-sub">Describe your need, occasion, or person and our Gemini AI will scan the grid inventory.</p>
+      <div class="vibe-examples">
+        <span onclick="setVibeQuery(this)">🎮 Gift for a gamer</span>
+        <span onclick="setVibeQuery(this)">🏖️ Beach trip essentials</span>
+        <span onclick="setVibeQuery(this)">💼 Work from home setup</span>
+        <span onclick="setVibeQuery(this)">🎂 Birthday under ₹5000</span>
+      </div>
+      <div class="form-group" style="margin-top:24px;">
+        <textarea id="vibe-query-input" rows="3" placeholder="e.g. I need a cool birthday gift for my cousin who is deeply into neon styles..."></textarea>
+      </div>
+      <button class="btn-primary w-full" id="find-match-btn" onclick="runVibeMatcher()">✦ Find My Match →</button>
+      <div id="vibe-result"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
